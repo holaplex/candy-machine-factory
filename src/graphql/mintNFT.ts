@@ -16,8 +16,9 @@ import {
   UploadMetadataOutput,
   Nft,
   CreateNftOutput,
+  CreateNftInput,
 } from '@metaplex-foundation/js-next';
-import { Connection, clusterApiUrl, Keypair } from '@solana/web3.js';
+import { Connection, clusterApiUrl, Keypair, PublicKey } from '@solana/web3.js';
 
 export const MintNftResult = objectType({
   name: 'MintNftResult',
@@ -129,6 +130,9 @@ export const MintNft = mutationField('mintNft', {
     nftMetadataJSON: arg({
       type: 'File',
     }),
+    mintToAddress: arg({
+      type: 'String',
+    })
   },
   async resolve (_, args, ctx: YogaInitialContext) {
     const connection = new Connection(clusterApiUrl('mainnet-beta'));
@@ -137,6 +141,17 @@ export const MintNft = mutationField('mintNft', {
       nft: Nft;
     } & CreateNftOutput = null!;
     let wallet: Keypair = null!;
+
+    let mintToPubkey: PublicKey = null;
+    try {
+      if (args.mintToAddress) {
+        mintToPubkey = new PublicKey(args.mintToAddress!)
+      }
+    } catch (e) {
+      return {
+        message: `Error parsing mint to Address: ${e.message}`,
+      };
+    }
 
     const keyPairBytes = JSON.parse(
       decryptEncodedPayload(args.encryptedMessage),
@@ -177,9 +192,16 @@ export const MintNft = mutationField('mintNft', {
       };
     }
 
+    let create_input_data: CreateNftInput = uri;
+
+    if (mintToPubkey) {
+      // if mintTo arg is provided, we want the NFT owner to be that address instead of being owned by the mint.
+      create_input_data.owner = mintToPubkey
+    }
+    
     // Create New NFT with the metadata
     try {
-      nft = await metaplex.nfts().create(uri);
+      nft = await metaplex.nfts().create(create_input_data);
     } catch (e) {
       return {
         message: `Error creating NFT: ${e.message}`,

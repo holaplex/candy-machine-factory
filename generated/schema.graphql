@@ -77,7 +77,7 @@ type Mutation {
     """Set collection mint pubkey"""
     setCollectionMint: Boolean!
   ): CandyMachineUploadResult
-  mintNft(encryptedMessage: EncryptedMessage!, nftMetadata: NftMetadata, nftMetadataJSON: File): MintNftResult
+  mintNft(encryptedMessage: EncryptedMessage!, mintToAddress: String, nftMetadata: NftMetadata, nftMetadataJSON: File): MintNftResult
 }
 
 input NftAttribute {

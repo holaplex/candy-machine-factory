@@ -165,6 +165,7 @@ export interface NexusGenArgTypes {
     }
     mintNft: { // args
       encryptedMessage: NexusGenInputs['EncryptedMessage']; // EncryptedMessage!
+      mintToAddress?: string | null; // String
       nftMetadata?: NexusGenInputs['NftMetadata'] | null; // NftMetadata
       nftMetadataJSON?: NexusGenScalars['File'] | null; // File
     }
